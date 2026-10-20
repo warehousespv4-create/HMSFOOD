@@ -2,15 +2,40 @@ package com.example.foodku.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,16 +44,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.foodku.data.*
-import com.example.foodku.ui.theme.*
+import com.example.foodku.data.Restaurant
+import com.example.foodku.data.SampleData
+import com.example.foodku.ui.theme.Orange
+import com.example.foodku.ui.theme.OrangeLight
+import com.example.foodku.ui.theme.OrangeSoft
+import com.example.foodku.ui.theme.StarYellow
+import com.example.foodku.ui.theme.Surface
+import com.example.foodku.ui.theme.TextGray
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(cartCount: Int, onRestaurant: (Int) -> Unit, onCart: () -> Unit) {
+fun HomeScreen(
+    restaurants: List<Restaurant>,
+    cartCount: Int,
+    onRestaurant: (Int) -> Unit,
+    onCart: () -> Unit
+) {
     var query by remember { mutableStateOf("") }
     var selected by remember { mutableStateOf<String?>(null) }
-    val list = remember(query, selected) {
-        SampleData.restaurants.filter {
+
+    val list = remember(query, selected, restaurants) {
+        restaurants.filter {
             (selected == null || it.category == selected) &&
                 (it.name.contains(query, true) || it.category.contains(query, true))
         }
@@ -39,35 +76,46 @@ fun HomeScreen(cartCount: Int, onRestaurant: (Int) -> Unit, onCart: () -> Unit) 
             Column(
                 Modifier.fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(Orange, OrangeLight)))
-                    .statusBarsPadding().padding(16.dp)
+                    .statusBarsPadding()
+                    .padding(16.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.LocationOn, null, tint = Color.White)
                     Spacer(Modifier.width(6.dp))
                     Column(Modifier.weight(1f)) {
-                        Text("Dikirim ke", color = Color.White.copy(0.8f), fontSize = 11.sp)
+                        Text("Dikirim ke", color = Color.White.copy(alpha = 0.8f), fontSize = 11.sp)
                         Text("Jakarta Selatan", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                     BadgedBox(
-                        badge = { if (cartCount > 0) Badge(containerColor = Color.White, contentColor = Orange) { Text("$cartCount") } },
+                        badge = {
+                            if (cartCount > 0) {
+                                Badge(containerColor = Color.White, contentColor = Orange) {
+                                    Text("$cartCount")
+                                }
+                            }
+                        },
                         modifier = Modifier.clickable { onCart() }
                     ) { Icon(Icons.Default.ShoppingCart, null, tint = Color.White) }
                 }
                 Spacer(Modifier.height(14.dp))
                 TextField(
-                    value = query, onValueChange = { query = it },
+                    value = query,
+                    onValueChange = { query = it },
                     placeholder = { Text("Mau makan apa hari ini?") },
                     leadingIcon = { Icon(Icons.Default.Search, null, tint = Orange) },
                     singleLine = true,
                     shape = RoundedCornerShape(28.dp),
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
                     )
                 )
             }
         }
+
         item {
             LazyRow(
                 Modifier.background(Color.White).padding(vertical = 12.dp),
@@ -89,7 +137,8 @@ fun HomeScreen(cartCount: Int, onRestaurant: (Int) -> Unit, onCart: () -> Unit) 
                         ) { Text(c.emoji, fontSize = 26.sp) }
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            c.name, fontSize = 12.sp,
+                            c.name,
+                            fontSize = 12.sp,
                             color = if (active) Orange else Color.Black,
                             fontWeight = if (active) FontWeight.Bold else FontWeight.Normal
                         )
@@ -97,6 +146,7 @@ fun HomeScreen(cartCount: Int, onRestaurant: (Int) -> Unit, onCart: () -> Unit) 
                 }
             }
         }
+
         item {
             Box(
                 Modifier.padding(16.dp).fillMaxWidth().height(110.dp)
@@ -106,26 +156,27 @@ fun HomeScreen(cartCount: Int, onRestaurant: (Int) -> Unit, onCart: () -> Unit) 
             ) {
                 Column(Modifier.align(Alignment.CenterStart)) {
                     Text("GRATIS ONGKIR", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp)
-                    Text("Min. belanja Rp50.000", color = Color.White.copy(0.9f), fontSize = 13.sp)
+                    Text("Min. belanja Rp50.000", color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp)
                 }
                 Text("🛵", fontSize = 56.sp, modifier = Modifier.align(Alignment.CenterEnd))
             }
         }
+
         item {
             Text(
                 if (selected == null) "Restoran Terdekat" else "Kategori: $selected",
-                fontWeight = FontWeight.Bold, fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
         }
+
         if (list.isEmpty()) {
-            item {
-                Box(Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
-                    Text("Restoran tidak ditemukan 😢", color = TextGray)
-                }
-            }
+            item { EmptyState("🍽️", "Belum ada restoran yang cocok") }
         }
+
         items(list, key = { it.id }) { r -> RestaurantCard(r) { onRestaurant(r.id) } }
+
         item { Spacer(Modifier.height(16.dp)) }
     }
 }
@@ -144,9 +195,9 @@ fun RestaurantCard(r: Restaurant, onClick: () -> Unit) {
             Spacer(Modifier.height(2.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Star, null, tint = StarYellow, modifier = Modifier.size(15.dp))
-                Text(" ${r.rating} • ${r.category}", fontSize = 12.sp, color = TextGray)
+                Text(" ${r.rating} · ${r.category}", fontSize = 12.sp, color = TextGray)
             }
-            Text("${r.distanceKm} km • ${r.etaMin} mnt", fontSize = 12.sp, color = TextGray)
+            Text("${r.distanceKm} km · ${r.etaMin} mnt", fontSize = 12.sp, color = TextGray)
             r.promo?.let {
                 Spacer(Modifier.height(6.dp))
                 Text(

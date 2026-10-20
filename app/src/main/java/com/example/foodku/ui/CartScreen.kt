@@ -23,7 +23,7 @@ import com.example.foodku.ui.theme.*
 @Composable
 fun CartScreen(vm: AppViewModel, onBack: () -> Unit, onOrdered: () -> Unit) {
     val lines = vm.lines()
-    val restaurant = vm.cartRestaurantId?.let { SampleData.restaurantById(it) }
+    val restaurant = vm.cartRestaurantId?.let { vm.restaurantById(it) }
 
     Column(Modifier.fillMaxSize().background(Surface)) {
         Row(
@@ -87,7 +87,7 @@ fun CartScreen(vm: AppViewModel, onBack: () -> Unit, onOrdered: () -> Unit) {
                 Text(rupiah(vm.total()), color = Orange, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
             }
             Button(
-                onClick = { vm.checkout(); onOrdered() },
+                onClick = { if (vm.checkout() == null) onOrdered() },
                 colors = ButtonDefaults.buttonColors(containerColor = Orange),
                 shape = RoundedCornerShape(24.dp),
                 contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp)
